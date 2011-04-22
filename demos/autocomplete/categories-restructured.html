@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<title>jQuery UI Autocomplete - Categories</title>
+	<link rel="stylesheet" href="../../themes/base/jquery.ui.all.css">
+	<script src="../../jquery-1.5.1.js"></script>
+	<script src="../../ui/jquery.ui.core.js"></script>
+	<script src="../../ui/jquery.ui.widget.js"></script>
+	<script src="../../ui/jquery.ui.position.js"></script>
+	<script src="../../ui/jquery.ui.menu.js"></script>
+	<script src="../../ui/jquery.ui.autocomplete.js"></script>
+	<link rel="stylesheet" href="../demos.css">
+	<style>
+	
+	.ui-autocomplete-table {
+		border-spacing: 0;
+	}
+	
+	.ui-autocomplete-table td, .ui-autocomplete-table th {
+		padding: 0;
+		border: 0 none;
+	}
+	
+	.ui-autocomplete-category {
+		vertical-align: top;
+	}
+	
+	.ui-autocomplete-category h3 {
+		color: #aaa;
+		font-size: 100%;
+		font-weight: normal;
+		
+		text-align: right;
+		margin: 0;
+		
+		/* same as .ui-menu-item a */
+		padding: .2em .4em;
+		line-height: 1.5;
+	}
+	
+	.ui-autocomplete-category th {
+		border-right: 1px solid #ddd;
+	}
+	
+	.ui-autocomplete-category td {
+		background-color: #fbfbfb;
+		border-top: 1px solid #ddd;
+	}
+	
+	.ui-autocomplete-category:first-child td {
+		border-top: 0 none;
+	}
+	
+	.ui-autocomplete-category:nth-child(2n) td {
+		background-color: #f4f4f4;
+	}
+	
+	.ui-autocomplete-category ul {
+		list-style: none;
+		padding: 0;
+		margin: 0;
+	}
+	
+	.ui-autocomplete-category td img {
+		border: 1px solid #fff;
+		outline: 1px solid #ddd;
+		margin-right: .4em;
+		vertical-align: top;
+	}
+	</style>
+	<script>
+	$.widget( "custom.catmenu", $.ui.menu, {
+		_findSubmenus: function() {
+			return $([]);
+		},
+		_findNewItems: function(root) {
+			return root.find( "li:not(.ui-menu-item)" );
+		},
+		_menuItems: function(menu) {
+			return menu.find("ul").children(".ui-menu-item");
+		},
+		_prevItems: function() {
+			var previous = this.active.prevAll(".ui-menu-item")
+				.add(
+					this.active
+						.closest(".ui-autocomplete-category")
+						.prevAll(".ui-autocomplete-category")
+						.find(".ui-menu-item"));
+			
+			// HACK: $.fn.add sorts by DOM-order, but not on .add([])
+			// so we re-sort it using $.unique
+			return $($.unique(previous).get().reverse());
+		},
+		_nextItems: function() {
+			return this.active.nextAll(".ui-menu-item")
+				.add(
+					this.active
+						.closest(".ui-autocomplete-category")
+						.nextAll(".ui-autocomplete-category")
+						.find(".ui-menu-item"));
+		}
+	});
+	
+	$.widget( "custom.catcomplete", $.ui.autocomplete, {
+		menuWidget: "catmenu",
+		menuRoot: "<div></div>",
+		
+		_renderItem: function( ul, item ) {
+			var listItem = $( "<li></li>" )
+				.data( "item.autocomplete", item )
+				.append( $( "<a></a>" ).text( item.label ) )
+				.appendTo( ul );
+			
+			if( item.category == "Artists" ) {
+				listItem.find('a').prepend("<img src='http://dummyimage.com/40x30/09f/fff&text=x' width='40' />");
+			} else if (item.category == "Albums") {
+				listItem.find('a').prepend("<img src='http://dummyimage.com/40x40/f90/fff&text=a' width='40' />");
+			}
+			
+			return listItem;
+		},
+		
+		_renderMenu: function( ul, items ) {
+			var self = this,
+				currentCategory = "",
+				categoryList = null;
+				
+			var table = $("<table class='ui-autocomplete-table'></table>").appendTo(ul);
+			
+			$.each( items, function( index, item ) {
+				if ( item.category != currentCategory ) {
+					var src = "<tr class='ui-autocomplete-category'><th><h3></h3></th><td><ul></ul></td></tr>";
+					categoryList = $(src).appendTo(table)
+						.find('h3')
+							.text(item.category)
+						.end()
+						.find('ul');
+					currentCategory = item.category;
+				}
+				self._renderItem( categoryList, item );
+			});
+		}
+	});
+	</script>
+	<script>
+	$(function() {
+		var data = [
+			{ label: "anders", category: "Artists" },
+			{ label: "andreas", category: "Artists" },
+			{ label: "antal", category: "Artists" },
+			{ label: "radio - anders", category: "Albums" },
+			{ label: "drummer - another beat", category: "Albums" },
+			{ label: "singer - antal", category: "Albums" },
+			{ label: "andere musik", category: "Tags" },
+			{ label: "standup", category: "Tags" }
+		];
+		
+		$( "#search" ).catcomplete({
+			delay: 0,
+			source: data
+		});
+	});
+	</script>
+</head>
+<body>
+
+<div class="demo">
+	<label for="search">Search: </label>
+	<input id="search" />
+</div><!-- End demo -->
+
+
+
+<div class="demo-description">
+<p>A categorized search result. Try typing "a" or "n".</p>
+</div><!-- End demo-description -->
+
+</body>
+</html>

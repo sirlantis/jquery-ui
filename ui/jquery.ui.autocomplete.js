@@ -34,6 +34,8 @@ $.widget( "ui.autocomplete", {
 	},
 
 	pending: 0,
+	menuWidget: "menu",
+	menuRoot: "<ul></ul>",
 
 	_create: function() {
 		var self = this,
@@ -138,7 +140,7 @@ $.widget( "ui.autocomplete", {
 		this.response = function() {
 			return self._response.apply( self, arguments );
 		};
-		this.menu = $( "<ul></ul>" )
+		this.menu = $( this.menuRoot )
 			.addClass( "ui-autocomplete" )
 			.appendTo( $( this.options.appendTo || "body", doc )[0] )
 			// prevent the close-on-blur in case of a "slow" click on the menu (long mousedown)
@@ -165,7 +167,7 @@ $.widget( "ui.autocomplete", {
 					clearTimeout( self.closing );
 				}, 13);
 			})
-			.menu({
+			[this.menuWidget]({
 				// custom key handling for now
 				input: $(),
 				focus: function( event, ui ) {
@@ -215,7 +217,7 @@ $.widget( "ui.autocomplete", {
 			})
 			.zIndex( this.element.zIndex() + 1 )
 			.hide()
-			.data( "menu" );
+			.data( this.menuWidget );
 		if ( $.fn.bgiframe ) {
 			 this.menu.element.bgiframe();
 		}
